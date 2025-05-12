@@ -1,0 +1,7 @@
+{% extends 'app/user_layout.html' %}
+
+{% block content %}
+<h2>Welcome to Your Dashboard</h2>
+<p>Hello, {{ request.session.username }}!</p>
+<p>This is your central hub for managing crime reports and status change requests.</p>
+{% endblock %}

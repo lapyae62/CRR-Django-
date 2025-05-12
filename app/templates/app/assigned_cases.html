@@ -1,0 +1,39 @@
+{% extends 'app/user_layout1.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Assigned Cases</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Case ID</th>
+                <th>Region Name</th>
+                <th>Crime Type</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.id }}</td>
+                <td>{{ report.regionname }}</td>
+                <td>{{ report.crimetype }}</td>
+                <td>{{ report.description }}</td>
+                <td>
+                    <form method="post" action="{% url 'take_case' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="report_id" value="{{ report.id }}">
+                        <button type="submit" class="btn btn-sm btn-success">Take Case</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No assigned cases available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "app/user_layout1.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1>Welcome, {{ request.session.username }}!</h1>
+    <p class="lead">This is your dashboard. You can view reports in your region, manage assigned cases, and update your profile.</p>
+    <hr>
+    <p>Use the navigation bar above to get started!</p>
+</div>
+{% endblock %}

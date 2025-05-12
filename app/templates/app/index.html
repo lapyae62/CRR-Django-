@@ -1,0 +1,22 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1>Welcome to the Crime Report and Record System</h1>
+    <p class="lead">Securely manage and monitor criminal reports across regions. This system helps officers and administrators keep track of case progress and reporting efficiently.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Report a Crime</h2>
+        <p>Quickly submit new crime reports and attach evidence files or descriptions.</p>
+        <p><a class="btn btn-success" href="{% url 'report_crime' %}">Report &raquo;</a></p>
+    </div>
+
+    <div class="col-md-6">
+        <h2>Monitor Activity</h2>
+        <p>Track status of reported cases, assigned officers, and investigation updates.</p>
+        <p><a class="btn btn-info" href="{% url 'login' %}">Login and Continue &raquo;</a></p>
+    </div>
+</div>
+{% endblock %}

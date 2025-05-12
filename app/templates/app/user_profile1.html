@@ -1,0 +1,161 @@
+﻿{% extends "app/user_layout1.html" %}
+
+{% block content %}
+<h2>User Profile</h2>
+
+{% if user %}
+<table class="table table-bordered">
+    <tr><th>Username</th><td>{{ user.username }}</td></tr>
+    <tr><th>Police ID</th><td>{{ user.policeid }}</td></tr>
+    <tr><th>Rank</th><td>{{ user.rank }}</td></tr>
+    <tr><th>Email</th><td>{{ user.email }}</td></tr>
+    <tr><th>State</th><td>{{ user.state }}</td></tr>
+    <tr><th>City</th><td>{{ user.city }}</td></tr>
+    <tr><th>Station</th><td>{{ user.station }}</td></tr>
+</table>
+
+<!-- Action Buttons -->
+<div class="form-group">
+    <button class="btn btn-primary" data-toggle="modal" data-target="#regionChangeModal">
+        Request Region Change
+    </button>
+    <button class="btn btn-info" data-toggle="modal" data-target="#rankChangeModal">
+        Request Rank Change
+    </button>
+</div>
+
+<!-- Region Change Modal -->
+<div class="modal fade" id="regionChangeModal" tabindex="-1" role="dialog" aria-labelledby="regionChangeLabel">
+    <div class="modal-dialog" role="document">
+        <form method="post" action="{% url 'request_region_change' %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+                    <h4 class="modal-title" id="regionChangeLabel">Request Region Change</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="state">New State</label>
+                        <select class="form-control" name="state" id="state" required>
+                            <option value="">-- Select a State --</option>
+                            <option value="KaChin">KaChin</option>
+                            <option value="KaYah">KaYah</option>
+                            <option value="KaYin">KaYin</option>
+                            <option value="Chin">Chin</option>
+                            <option value="Mon">Mon</option>
+                            <option value="YaKhine">YaKhine</option>
+                            <option value="Shan">Shan</option>
+                            <option value="Yangon">Yangon</option>
+                            <option value="Mandalay">Mandalay</option>
+                            <option value="Bago">Bago</option>
+                            <option value="Sagaing">Sagaing</option>
+                            <option value="Magwe">Magwe</option>
+                            <option value="Ayeyarwady">Ayeyarwady</option>
+                            <option value="Taninthayi">Taninthayi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">New City</label>
+                        <select class="form-control" name="city" id="city" required>
+                            <option value="" disabled selected>Select City</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="station">New Station</label>
+                        <select class="form-control" name="station" id="station" required>
+                            <option value="" disabled selected>Select Station</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rank Change Modal -->
+<div class="modal fade" id="rankChangeModal" tabindex="-1" role="dialog" aria-labelledby="rankChangeLabel">
+    <div class="modal-dialog" role="document">
+        <form method="post" action="{% url 'request_rank_change' %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="rankChangeLabel">Request Rank Change</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="desiredRank">Desired Rank</label>
+                        <!--<input type="text" class="form-control" name="new_rank" id="desiredRank" required>-->
+                        <select name="new_rank" id="desiredRank" class="form-control" required>
+                            <option>Constable</option>
+                            <option>Sub-Inspector</option>
+                            <option>Inspector</option>
+                            <option>Superintendent</option>
+                            <option>Director General</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Submit Request</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+const cityOptions = {
+    "KaChin": ["Myitkyina", "Bhamo", "Putao", "Shwegu", "Mogaung"],
+    "KaYah": ["Loikaw", "Demoso", "Shadaw", "Hpasawng", "Mese"],
+    "KaYin": ["Hpa‑An", "Hlaingbwe", "Thandaung", "Kawkareik", "Myawaddy"],
+    "Chin": ["Hakha", "Falam", "Tonzang", "Matupi", "Paletwa"],
+    "Mon": ["Mawlamyine", "Thanbyuzayat", "Mudon", "Ye", "Chaungzon"],
+    "YaKhine": ["Sittwe", "Thandwe", "Mrauk‑U", "Kyaukphyu", "Gwa"],
+    "Shan": ["Taunggyi", "Lashio", "Muse", "Kengtung", "Nyaungshwe"],
+    "Yangon": ["Yangon", "Thanlyin", "Insein", "Hlegu", "Hmawbi"],
+    "Mandalay": ["Mandalay", "Pyin Oo Lwin", "Kyaukse", "Meiktila", "Myingyan"],
+    "Bago": ["Bago", "Taungoo", "Pyay", "Shwegyin", "Nyaunglebin"],
+    "Sagaing": ["Sagaing", "Monywa", "Shwebo", "Kale", "Tamu"],
+    "Magwe": ["Magwe", "Pakokku", "Minbu", "Aunglan", "Thayet"],
+    "Ayeyarwady": ["Pathein", "Hinthada", "Maubin", "Pyapon", "Myaungmya"],
+    "Taninthayi": ["Dawei", "Myeik", "Kawthaung", "Palaw", "Taninthayi"]
+};
+
+    const stationOptions = {};
+    Object.keys(cityOptions).forEach(state => {
+        cityOptions[state].forEach(city => {
+            stationOptions[city] = ["Station 1", "Station 2", "Station 3"];
+        });
+    });
+
+document.getElementById('state').addEventListener('change', function () {
+    const cities = cityOptions[this.value] || [];
+    const citySelect = document.getElementById('city');
+    citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+    cities.forEach(city => {
+        citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+    });
+    document.getElementById('station').innerHTML = '<option value="" disabled selected>Select Station</option>';
+});
+
+document.getElementById('city').addEventListener('change', function () {
+    const stations = stationOptions[this.value] || [];
+    const stationSelect = document.getElementById('station');
+    stationSelect.innerHTML = '<option value="" disabled selected>Select Station</option>';
+    stations.forEach(station => {
+        stationSelect.innerHTML += `<option value="${station}">${station}</option>`;
+    });
+});
+</script>
+
+{% else %}
+<p>No user data found.</p>
+{% endif %}
+{% endblock %}

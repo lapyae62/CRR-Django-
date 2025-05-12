@@ -1,0 +1,69 @@
+{% extends 'app/user_layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Regional Reports</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Crime Type</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.id }}</td>
+                <td>{{ report.crimetype }}</td>
+                <td>{{ report.reportdate }}</td>
+                <td>{{ report.description }}</td>
+                <td>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assignModal{{ report.id }}">
+                        Assign
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No reports found in your region.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Assign Officer Modal -->
+<div class="modal fade" id="assignModal{{ report.id }}" tabindex="-1" role="dialog" aria-labelledby="assignModalLabel{{ report.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form method="POST" action="{% url 'assign_case' %}">
+            {% csrf_token %}
+            <input type="hidden" name="report_id" value="{{ report.id }}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignModalLabel{{ report.id }}">Assign Officer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="officer">Select Officer</label>
+                        <select class="form-control" name="officer" required>
+                            {% for officer in eligible_officers %}
+                            <option value="{{ officer.username }}">{{ officer.username }}</option>
+                            {% empty %}
+                            <option disabled>No eligible officers available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Assign</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

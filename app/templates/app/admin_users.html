@@ -1,0 +1,309 @@
+﻿{% extends 'app/admin_layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">User Management</h2>
+
+    <!-- Table of Users -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>PoliceID</th>
+                <th>Rank</th>
+                <th>Email</th>
+                <th>State</th>
+                <th>City</th>
+                <th>Station</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td class="id">{{ user.id }}</td>
+                <td class="username">{{ user.username }}</td>
+                <td class="policeid">{{ user.policeid }}</td>
+                <td class="rank">{{ user.rank }}</td>
+                <td class="email">{{ user.email }}</td>
+                <td class="state">{{ user.state }}</td>
+                <td class="city">{{ user.city }}</td>
+                <td class="station">{{ user.station }}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editUserModal"
+                            data-id="{{ user.id }}"
+                            data-username="{{ user.username }}"
+                            data-email="{{ user.email }}"
+                            data-rank="{{ user.rank }}"
+                            data-policeid="{{ user.policeid }}"
+                            data-state="{{ user.state }}"
+                            data-city="{{ user.city }}"
+                            data-station="{{ user.station }}">
+
+                        Edit
+                    </button>
+
+                    <button class="btn btn-sm btn-danger delete-user" data-id="{{ user.id }}">Delete</button>
+
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add User Button -->
+    <button class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Add New User</button>
+
+    <!-- Modal Popup for Adding User -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="POST" action="{% url 'admin_users' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="policeid">Police ID</label>
+                            <input type="number" class="form-control" name="policeid">
+                        </div>
+                        <div class="form-group">
+                            <label for="rank">Rank</label>
+                            <select name="rank" class="form-control">
+                                <option>Constable</option>
+                                <option>Sub-Inspector</option>
+                                <option>Inspector</option>
+                                <option>Superintendent</option>
+                                <option>Director General</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="state-modal">State</label>
+                            <select id="state-modal" name="state" class="form-control" required>
+                                <option value="">-- Select a State --</option>
+                                <option value="KaChin">KaChin</option>
+                                <option value="KaYah">KaYah</option>
+                                <option value="KaYin">KaYin</option>
+                                <option value="Chin">Chin</option>
+                                <option value="Mon">Mon</option>
+                                <option value="YaKhine">YaKhine</option>
+                                <option value="Shan">Shan</option>
+                                <option value="Yangon">Yangon</option>
+                                <option value="Mandalay">Mandalay</option>
+                                <option value="Bago">Bago</option>
+                                <option value="Sagaing">Sagaing</option>
+                                <option value="Magwe">Magwe</option>
+                                <option value="Ayeyarwady">Ayeyarwady</option>
+                                <option value="Taninthayi">Taninthayi</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="city-modal">City</label>
+                            <select id="city-modal" name="city" class="form-control" required>
+                                <option value="">-- Select a State First --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="station-modal">Station</label>
+                            <select id="station-modal" name="station" class="form-control" required>
+                                <option value="">-- Select a City First --</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    /* ---------- 1.  Look‑up tables ---------- */
+    const stateCityMap = {
+        "KaChin": ["Myitkyina", "Bhamo", "Putao", "Shwegu", "Mogaung"],
+        "KaYah": ["Loikaw", "Demoso", "Shadaw", "Hpasawng", "Mese"],
+        "KaYin": ["Hpa‑An", "Hlaingbwe", "Thandaung", "Kawkareik", "Myawaddy"],
+        "Chin": ["Hakha", "Falam", "Tonzang", "Matupi", "Paletwa"],
+        "Mon": ["Mawlamyine", "Thanbyuzayat", "Mudon", "Ye", "Chaungzon"],
+        "YaKhine": ["Sittwe", "Thandwe", "Mrauk‑U", "Kyaukphyu", "Gwa"],
+        "Shan": ["Taunggyi", "Lashio", "Muse", "Kengtung", "Nyaungshwe"],
+        "Yangon": ["Yangon", "Thanlyin", "Insein", "Hlegu", "Hmawbi"],
+        "Mandalay": ["Mandalay", "Pyin Oo Lwin", "Kyaukse", "Meiktila", "Myingyan"],
+        "Bago": ["Bago", "Taungoo", "Pyay", "Shwegyin", "Nyaunglebin"],
+        "Sagaing": ["Sagaing", "Monywa", "Shwebo", "Kale", "Tamu"],
+        "Magwe": ["Magwe", "Pakokku", "Minbu", "Aunglan", "Thayet"],
+        "Ayeyarwady": ["Pathein", "Hinthada", "Maubin", "Pyapon", "Myaungmya"],
+        "Taninthayi": ["Dawei", "Myeik", "Kawthaung", "Palaw", "Taninthayi"]
+    };
+
+    const cityStationMap = {};
+    Object.keys(stateCityMap).forEach(state => {
+        stateCityMap[state].forEach(city => {
+            cityStationMap[city] = ["Station 1", "Station 2", "Station 3"];
+        });
+    });
+
+    /* ---------- 2.  DOM handles ---------- */
+    const stateSel = document.getElementById("state-modal");
+    const citySel = document.getElementById("city-modal");
+    const stationSel = document.getElementById("station-modal");
+
+    /* ---------- 3.  State → City ---------- */
+    stateSel.addEventListener("change", () => {
+        const state = stateSel.value;
+        citySel.innerHTML =
+            '<option value="">-- Select City --</option>';
+        stationSel.innerHTML =
+            '<option value="">-- Select City First --</option>';
+
+        (stateCityMap[state] || []).forEach(city => {
+            citySel.insertAdjacentHTML(
+                "beforeend",
+                `<option value="${city}">${city}</option>`
+            );
+        });
+    });
+
+    /* ---------- 4.  City → Station ---------- */
+    citySel.addEventListener("change", () => {
+        const city = citySel.value;
+        stationSel.innerHTML =
+            '<option value="">-- Select Station --</option>';
+
+        (cityStationMap[city] || []).forEach(stn => {
+            stationSel.insertAdjacentHTML(
+                "beforeend",
+                `<option value="${stn}">${stn}</option>`
+            );
+        });
+    });
+</script>
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" action="{% url 'edit_user' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="user_id" id="edit-user-id">
+                    <div class="form-group">
+                        <label for="edit-username">Username</label>
+                        <input type="text" class="form-control" name="username" id="edit-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-policeid">Police ID</label>
+                        <input type="number" class="form-control" name="policeid" id="edit-policeid" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-rank">Rank</label>
+                        <input type="text" class="form-control" name="rank" id="edit-rank" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email">Email</label>
+                        <input type="email" class="form-control" name="email" id="edit-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" class="form-control" name="state" id="edit-state" required>
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" class="form-control" name="city" id="edit-city" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Station</label>
+                        <input type="text" class="form-control" name="station" id="edit-station" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).on('click', '.btn-warning', function () {
+        const button = $(this);
+        $('#edit-user-id').val(button.data('id'));
+        $('#edit-username').val(button.data('username'));
+        $('#edit-policeid').val(button.data('policeid'));
+        $('#edit-rank').val(button.data('rank'));
+        $('#edit-email').val(button.data('email'));
+        $('#edit-state').val(button.data('state'));
+        $('#edit-city').val(button.data('city'));
+        $('#edit-station').val(button.data('station'));
+
+        $('#editUserModal').modal('show');
+    });
+</script>
+<div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" action="{% url 'delete_user' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="user_id" id="delete-user-id">
+                    <p>Are you sure you want to delete <strong id="delete-username-display"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).on('click', '.delete-user', function () {
+        var userId = $(this).data('id');
+
+        if (confirm('Are you sure you want to delete this user?')) {
+            $.post("{% url 'delete_user' %}", {
+                'user_id': userId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }, function () {
+                window.location.reload();
+            });
+        }
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "app/user_layout1.html" %}
+
+{% block content %}
+<h2>Update Case</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label>Suspects</label>
+        <input type="text" class="form-control" name="suspects" value="{{ case.suspects }}">
+    </div>
+    <div class="form-group">
+        <label>Culprit</label>
+        <input type="text" class="form-control" name="culprit" value="{{ case.culprit }}">
+    </div>
+    <div class="form-group">
+        <label>Case Description</label>
+        <textarea class="form-control" name="casedescription">{{ case.casedescription }}</textarea>
+    </div>
+    <div class="form-group">
+        <label>Chief Officer</label>
+        <input type="text" class="form-control" name="chiefofficer" value="{{ case.chiefofficer }}">
+    </div>
+    <div class="form-group">
+        <label>Confirm</label>
+        <input type="text" class="form-control" name="confirm" value="{{ case.confirm }}">
+    </div>
+    <button type="submit" class="btn btn-success">Update</button>
+</form>
+{% endblock %}

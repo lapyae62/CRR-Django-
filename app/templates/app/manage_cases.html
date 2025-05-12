@@ -1,0 +1,37 @@
+{% extends "app/user_layout1.html" %}
+
+{% block content %}
+<h2>Manage Your Cases</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Report ID</th>
+            <th>Suspects</th>
+            <th>Culprit</th>
+            <th>Description</th>
+            <th>Chief Officer</th>
+            <th>Confirmation</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for case in cases %}
+        <tr>
+            <td>{{ case.id }}</td>
+            <td>{{ case.reportid }}</td>
+            <td>{{ case.suspects }}</td>
+            <td>{{ case.culprit }}</td>
+            <td>{{ case.casedescription }}</td>
+            <td>{{ case.chiefofficer }}</td>
+            <td>{{ case.confirm }}</td>
+            <td>
+                <a href="{% url 'update_case' case.id %}" class="btn btn-sm btn-primary">Update</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No cases found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

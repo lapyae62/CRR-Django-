@@ -1,0 +1,105 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Status Change Requests</h2>
+    <hr>
+
+    <!-- Rank Change Requests Section -->
+    <h3>Rank Change Requests</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Police ID</th>
+                <th>Current Rank</th>
+                <th>Requested Rank</th>
+                <th>State</th>
+                <th>City</th>
+                <th>Station</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in rank_requests %}
+            <tr>
+                <td>{{ request.name }}</td>
+                <td>{{ request.policeid }}</td>
+                <td>{{ request.currentrank }}</td>
+                <td>{{ request.updaterank }}</td>
+                <td>{{ request.state }}</td>
+                <td>{{ request.city }}</td>
+                <td>{{ request.station }}</td>
+                <td>
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_type" value="rank">
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        <input type="hidden" name="action" value="apply">
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+
+                    <form method="post" style="display:inline; margin-left:5px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_type" value="rank">
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        <input type="hidden" name="action" value="reject">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr><td colspan="8">No pending rank change requests.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Region Change Requests Section -->
+    <h3>Region Change Requests</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Police ID</th>
+                <th>Current Location</th>
+                <th>Requested Location</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in region_requests %}
+            <tr>
+                <td>{{ request.name }}</td>
+                <td>{{ request.policeid }}</td>
+                <td>{{ request.currentlocation }}</td>
+                <td>{{ request.updatelocation }}</td>
+                <td>
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_type" value="region">
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        <input type="hidden" name="action" value="apply">
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+
+                    <form method="post" style="display:inline; margin-left:5px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_type" value="region">
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        <input type="hidden" name="action" value="reject">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No pending region change requests.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

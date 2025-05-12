@@ -1,0 +1,57 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<h2>Report a Crime</h2>
+<form method="POST" enctype="multipart/form-data" action="{% url 'report_crime' %}">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label for="region">Region</label>
+        <select class="form-control" id="region" name="region" required>
+            <option value="">Select Region</option>
+            <option value="KaChin">KaChin</option>
+            <option value="KaYah">KaYah</option>
+            <option value="KaYin">KaYin</option>
+            <option value="Chin">Chin</option>
+            <option value="Mon">Mon</option>
+            <option value="YaKhine">YaKhine</option>
+            <option value="Shan">Shan</option>
+            <option value="Yangon">Yangon</option>
+            <option value="Mandalay">Mandalay</option>
+            <option value="Naypyitaw">Naypyitaw</option>
+            <option value="SaGaing">SaGaing</option>
+            <option value="MaGwe">MaGwe</option>
+            <option value="AyeYarWaddy">AyeYarWaddy</option>
+            <option value="TaNinTharYi">TaNinTharYi</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="crime_type">Crime Type</label>
+        <select class="form-control" id="crime_type" name="crime_type" required>
+            <option value="">Select Crime Type</option>
+            <option value="Theft">Theft</option>
+            <option value="Assault">Assault</option>
+            <option value="Fraud">Fraud</option>
+            <option value="Murder">Murder</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the incident..." required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="evidence_image">Upload Image Evidence</label>
+        <input type="file" class="form-control" id="evidence_image" name="evidence_image" accept="image/*">
+    </div>
+
+    <div class="form-group">
+        <label for="evidence_video">Upload Video Evidence</label>
+        <input type="file" class="form-control" id="evidence_video" name="evidence_video" accept="video/*">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Report</button>
+</form>
+{% endblock %}

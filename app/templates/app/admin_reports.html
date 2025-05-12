@@ -1,0 +1,36 @@
+
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Reports Overview</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Region</th>
+                <th>Crime Type</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.id }}</td>
+                <td>{{ report.regionname }}</td>
+                <td>{{ report.crimetype }}</td>
+                <td>{{ report.reportdate }}</td>
+                <td>{{ report.description }}</td>
+                <td>{{ report.status }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No reports available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

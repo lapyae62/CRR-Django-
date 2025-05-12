@@ -1,0 +1,78 @@
+{% extends 'app/user_layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Status Change Requests</h2>
+
+    <h4>Region Change Requests</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Current Region</th>
+                <th>Requested Region</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in region_requests %}
+            <tr>
+                <td>{{ req.name }}</td>
+                <td>{{ req.currentlocation }}</td>
+                <td>{{ req.updatelocation }}</td>
+                <td>{{ req.confirmation }}</td>
+                <td>
+                    <form method="post" action="{% url 'process_change_request' 'region' req.id 'accept' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                    </form>
+                    <form method="post" action="{% url 'process_change_request' 'region' req.id 'reject' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No region change requests.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h4 class="mt-5">Rank Change Requests</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Current Rank</th>
+                <th>Requested Rank</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in rank_requests %}
+            <tr>
+                <td>{{ req.name }}</td>
+                <td>{{ req.currentrank }}</td>
+                <td>{{ req.updaterank }}</td>
+                <td>{{ req.confirmation }}</td>
+                <td>
+                    <form method="post" action="{% url 'process_change_request' 'rank' req.id 'accept' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                    </form>
+                    <form method="post" action="{% url 'process_change_request' 'rank' req.id 'reject' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No rank change requests.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
