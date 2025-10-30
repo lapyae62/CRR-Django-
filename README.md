@@ -27,5 +27,5 @@ A Django-based web application designed for efficient crime reporting and manage
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/lapyae62/crime-report-system.git
+   git clone https://github.com/lapyae62/CRR-Django-.git
    cd crime-report-system
