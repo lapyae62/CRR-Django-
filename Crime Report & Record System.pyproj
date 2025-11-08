@@ -79,6 +79,9 @@
     <Content Include="app\templates\app\user_layout1.html" />
     <Content Include="app\templates\app\user_profile.html" />
     <Content Include="app\templates\app\user_profile1.html" />
+    <Content Include="Crime_Report___Record_System\.env">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="requirements.txt" />
     <Content Include="db.sqlite3" />
     <Content Include="app\static\app\content\bootstrap.css" />
