@@ -120,6 +120,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
 
 # Custom Backend for authentication
-AUTHENTICATION_BACKENDS = ['app.backends.UsersAuthBackend']
-
+AUTHENTICATION_BACKENDS = ['app.backends.CustomAuthBackend']
 LOGIN_URL = 'login/'

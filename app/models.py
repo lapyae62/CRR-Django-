@@ -3,6 +3,7 @@ Definition of models.
 """
 
 from django.db import models
+from django.contrib.auth.hashers import make_password
 
 class Reports(models.Model):
     id = models.AutoField(primary_key=True)
@@ -41,7 +42,7 @@ class EvidentVideos(models.Model):
 
 class Users(models.Model):
     id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50, blank=True, null=True)
+    username = models.CharField(max_length=150, blank=True, null=True)
     password = models.CharField(max_length=50, blank=True, null=True)
     policeid = models.IntegerField(blank=True, null=True)
     rank = models.CharField(max_length=20, blank=True, null=True)
@@ -49,7 +50,17 @@ class Users(models.Model):
     state = models.CharField(max_length=20, blank=True, null=True)
     city = models.CharField(max_length=20, blank=True, null=True)
     station = models.CharField(max_length=20, blank=True, null=True)
+    last_login = models.DateTimeField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        """
+        Automatically hash plaintext passwords using Django's default (PBKDF2).
+        Skip hashing if it already looks hashed.
+        """
+        pw = self.password or ""
+        if not pw.startswith('pbkdf2_'):
+            self.password = make_password(pw)
+        super().save(*args, **kwargs)
     class Meta:
         managed = False
         db_table = 'Users'
