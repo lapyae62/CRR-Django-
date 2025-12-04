@@ -22,6 +22,7 @@ from .models import CaseReports
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import check_password
 
 @login_required
 def review_rank_changes_admin(request):
@@ -524,41 +525,54 @@ class CustomLoginForm(forms.Form):
 
 class CustomLoginView(LoginView):
     form_class = CustomLoginForm
-    template_name = 'app/login.html'  # your template path
+    template_name = 'app/login.html'
 
     def form_valid(self, form):
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
-        remember_me= form.cleaned_data.get('remember_me', False)
+        remember_me = form.cleaned_data.get('remember_me', False)
 
+        # Admin bypass (unchanged)
         if username == 'admin' and password == '@admin':
-            return redirect('admin_reports')  # or any page
+            # IMPORTANT: do NOT return None!
+            return redirect('admin_reports')
 
+        # Authenticate using custom backend (hashed passwords)
         user = authenticate(self.request, username=username, password=password)
-        if user is not None:
-            self.request.session['user_id'] = user.id
-            self.request.session['username'] = user.username
-            self.request.session['state']= user.state
-            self.request.session['city']= user.city
-            self.request.session['station']= user.station
-            self.request.session['rank'] = user.rank
 
-
-            if not remember_me:
-                self.request.session.set_expiry(0)
-            else:
-                self.request.session.set_expiry(1209600)
-
-            rank = getattr(user, 'rank', None)
-            if rank in ['Constable', 'Sub-Inspector', 'Inspector']:
-                return redirect('user_dashboard1')
-            elif rank in ['Superintendent', 'Director General']:
-                return redirect('user_dashboard')
-            else:
-                return redirect('home')
-        else:
+        if user is None:
             messages.error(self.request, "Invalid login credentials")
             return self.form_invalid(form)
+
+        # ♻️ REQUIRED: login() stores the user in Django's session
+        login(self.request, user)
+
+        # Set session expiry (remember me)
+        if not remember_me:
+            self.request.session.set_expiry(0)        # expires on browser close
+        else:
+            self.request.session.set_expiry(1209600)  # 2 weeks
+
+        # Store extra session data
+        self.request.session['user_id'] = user.id
+        self.request.session['username'] = user.username
+        self.request.session['state'] = user.state
+        self.request.session['city'] = user.city
+        self.request.session['station'] = user.station
+        self.request.session['rank'] = user.rank
+
+        # Redirect based on rank
+        rank = getattr(user, 'rank', None)
+
+        if rank in ['Constable', 'Sub-Inspector', 'Inspector']:
+            return redirect('user_dashboard1')
+
+        elif rank in ['Superintendent', 'Director General']:
+            return redirect('user_dashboard')
+
+        # Fallback redirect (never return None)
+        return redirect('home')
+
 
 
 def report_crime(request):
