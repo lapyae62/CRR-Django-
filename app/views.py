@@ -23,8 +23,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
+from app.decorators import session_login_required, session_role_required
 
-@login_required
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def review_rank_changes_admin(request):
     requests = RankChangeRequests.objects.filter(confirmation='accepted', managed=False)
 
@@ -49,8 +51,8 @@ def review_rank_changes_admin(request):
 
     return render(request, 'app/admin_requests.html', {'requests': requests})
 
-@csrf_exempt
-@login_required
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def review_region_changes_admin(request):
     if request.method == 'POST':
         request_id = request.POST.get('request_id')
@@ -83,7 +85,7 @@ def review_region_changes_admin(request):
     }
     return render(request, 'app/admin_requests.html', context)
 
-@csrf_exempt
+@session_login_required
 def request_region_change(request):
     if request.method == 'POST' and request.session.get('user_id'):
         user_id = request.session['user_id']
@@ -108,7 +110,7 @@ def request_region_change(request):
         messages.success(request, 'Region change request submitted.')
     return redirect('user_profile1')
 
-@csrf_exempt
+@session_login_required
 def request_rank_change(request):
     if request.method == 'POST' and request.session.get('user_id'):
         user_id = request.session['user_id']
@@ -138,7 +140,7 @@ def user_profile1(request):
 
     return render(request, 'app/user_profile1.html', {'user': user})
 
-@login_required
+@session_login_required
 def update_case(request, case_id):
     username = request.session.get('username')
     if not username:
@@ -157,7 +159,7 @@ def update_case(request, case_id):
 
     return render(request, 'app/update_case.html', {'case': case})
 
-@login_required
+@session_login_required
 def take_case(request, report_id):
     username = request.session.get('username')
 
@@ -248,7 +250,7 @@ def regional_reports(request):
     }
     return render(request, 'app/regional_reports.html', context)
 
-@login_required
+@session_login_required
 @require_POST
 def assign_case(request):
     report_id = request.POST.get('report_id')
@@ -267,6 +269,8 @@ def assign_case(request):
 
     return redirect('regional_reports')
 
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def status_change_requests(request):
     if 'user_id' not in request.session:
         return redirect('login')
@@ -299,6 +303,8 @@ def status_change_requests(request):
     }
     return render(request, 'app/status_change_requests.html', context)
 
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def process_change_request(request, request_type, request_id, action):
     if request.method == 'POST':
         if request_type == 'region':
@@ -393,7 +399,8 @@ def regional_reports1(request):
     else:
         return redirect('login')
 
-@csrf_exempt
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def admin_requests(request):
     if request.method == 'POST':
         request_type = request.POST.get('request_type')
@@ -432,7 +439,8 @@ def admin_requests(request):
         'region_requests': region_requests
     })
 
-
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def delete_user(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
@@ -440,6 +448,8 @@ def delete_user(request):
         user.delete()
     return redirect('admin_users')
 
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def edit_user(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
@@ -457,6 +467,8 @@ def edit_user(request):
         return redirect('admin_users')  # Redirect to the user listing page
 
 @require_http_methods(["GET", "POST"])
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def admin_users(request):
     """
     GET  -> render the page with the users table
@@ -507,6 +519,8 @@ def admin_users(request):
         {"users": users_qs},
     )
 
+@session_login_required
+@session_role_required(['Admin', 'Superintendent', 'Director General'])
 def admin_reports(request):
     reports = Reports.objects.all().order_by('-reportdate')  # Show newest first
     context = {
@@ -532,11 +546,7 @@ class CustomLoginView(LoginView):
         password = form.cleaned_data.get('password')
         remember_me = form.cleaned_data.get('remember_me', False)
 
-        # Admin bypass (unchanged)
-        if username == 'admin' and password == '@admin':
-            # IMPORTANT: do NOT return None!
-            return redirect('admin_reports')
-
+        
         # Authenticate using custom backend (hashed passwords)
         user = authenticate(self.request, username=username, password=password)
 
@@ -570,10 +580,11 @@ class CustomLoginView(LoginView):
         elif rank in ['Superintendent', 'Director General']:
             return redirect('user_dashboard')
 
+        elif rank == 'Admin':
+            return redirect('admin_reports')
+
         # Fallback redirect (never return None)
         return redirect('home')
-
-
 
 def report_crime(request):
     if request.method == 'POST':
