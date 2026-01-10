@@ -38,4 +38,5 @@ urlpatterns = [
     path('manage_cases/', views.manage_cases, name='manage_cases'),
     path('update_case/<int:case_id>/', views.update_case, name='update_case'),
     path('user_profile1/', views.user_profile1, name='user_profile1'),
+    path('take_case/', views.take_case, name='take_case')
 ]
