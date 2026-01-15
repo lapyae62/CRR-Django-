@@ -48,7 +48,7 @@
                             <label for="officer">Select Officer</label>
                             <select class="form-control" name="officer" required>
                                 {% for officer in officers %}
-                                <option value="{{ officer.username }}">{{ officer.username }}</option>
+                                <option value="{{ officer.id }}">{{ officer.username }}</option>
                                 {% empty %}
                                 <option disabled>No eligible officers available</option>
                                 {% endfor %}

@@ -23,7 +23,13 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
+from django.db import transaction
 from app.decorators import session_login_required, session_role_required
+from app.utils.upload_validators import (
+    validate_total_size,
+    validate_file,
+)
+from django.core.exceptions import ValidationError
 
 @session_login_required
 @session_role_required(['Admin', 'Superintendent', 'Director General'])
@@ -143,26 +149,64 @@ def user_profile1(request):
 @session_login_required
 def update_case(request, case_id):
     username = request.session.get('username')
-    if not username:
-        return redirect('login')
-
     case = get_object_or_404(CaseReports, id=case_id, officer=username)
 
     if request.method == 'POST':
-        case.suspects = request.POST.get('suspects')
-        case.culprit = request.POST.get('culprit')
-        case.casedescription = request.POST.get('casedescription')
-        case.chiefofficer = request.POST.get('chiefofficer')
-        case.confirm = request.POST.get('confirm')
-        case.save()
+        files = request.FILES.getlist('evidence_files')
+
+        try:
+            validate_total_size(files, max_mb=50)
+        except ValidationError as e:
+            messages.error(request, str(e))
+            return redirect(request.path)
+
+        accepted = []
+        rejected = []
+
+        for f in files:
+            try:
+                mime = validate_file(f)
+                accepted.append((f, mime))
+            except ValidationError as e:
+                rejected.append(str(e))
+
+        if not accepted:
+            messages.error(request, "All uploaded files were invalid.")
+            return redirect(request.path)
+
+        with transaction.atomic():
+            case.suspects = request.POST.get('suspects')
+            case.culprit = request.POST.get('culprit')
+            case.casedescription = request.POST.get('casedescription')
+            case.confirm = request.POST.get('confirm')
+            case.save()
+
+            report = Reports.objects.get(id=case.reportid)
+
+            for f, mime in accepted:
+                if mime.startswith('image/'):
+                    EvidentImages.objects.create(image=f, cid=report)
+                elif mime.startswith('video/'):
+                    EvidentVideos.objects.create(video=f, cid=report)
+
+        for msg in rejected:
+            messages.warning(request, msg)
+
+        messages.success(
+            request,
+            f"{len(accepted)} file(s) uploaded successfully."
+        )
+
         return redirect('manage_cases')
 
     return render(request, 'app/update_case.html', {'case': case})
 
-@session_login_required
-def take_case(request, report_id):
-    username = request.session.get('username')
 
+@session_login_required
+@require_POST
+def take_case(request):
+    username = request.session.get('username')
+    report_id=request.POST.get('report_id')
     if not username:
         return redirect('login')
 
@@ -204,21 +248,21 @@ def manage_cases(request):
     return render(request, 'app/manage_cases.html', context)
 
 def assigned_cases(request):
-    username = request.session.get('username')
+    user_id = request.session.get('user_id')
 
-    if not username:
+    if not user_id:
         return redirect('login')
 
     try:
-        user = Users.objects.get(username=username)
+        user = Users.objects.get(id=user_id)
     except Users.DoesNotExist:
         return redirect('login')
 
     # Reports assigned to this user
-    assigned = Reports.objects.filter(assignedpoliceid=user.policeid)
+    assigned = Reports.objects.filter(assignedpoliceid=user.id)
 
     # Taken cases already handled by this user (status = 'Taken')
-    taken = Reports.objects.filter(assignedpoliceid=user.policeid, status='Taken')
+    taken = Reports.objects.filter(assignedpoliceid=user.id, status='Taken')
 
     context = {
         'assigned_cases': assigned.exclude(status='Taken'),
@@ -234,7 +278,7 @@ def regional_reports(request):
     station = request.session.get('station')
 
     # Fetch all reports from the same state
-    reports = Reports.objects.filter(regionname=state)
+    reports = Reports.objects.filter(regionname=state, assignedpoliceid=None)
 
     # Fetch eligible lower-rank officers in same location
     eligible_officers = Users.objects.filter(
@@ -254,12 +298,12 @@ def regional_reports(request):
 @require_POST
 def assign_case(request):
     report_id = request.POST.get('report_id')
-    officer_username = request.POST.get('officer_username')
+    officer_username = request.POST.get('officer')
 
     if report_id and officer_username:
         try:
             report = Reports.objects.get(id=report_id)
-            report.assignedPoliceId = officer_username
+            report.assignedpoliceid = officer_username
             report.save()
             messages.success(request, "Case successfully assigned.")
         except Reports.DoesNotExist:
@@ -588,30 +632,55 @@ class CustomLoginView(LoginView):
 
 def report_crime(request):
     if request.method == 'POST':
-        region = request.POST.get('region')
-        crime_type = request.POST.get('crime_type')
-        description = request.POST.get('description')
-        report_date = now()
-        uploaded_file = request.FILES.get('file_content')
+        files = request.FILES.getlist('evidence_files')
 
-        # Save the report
-        report = Reports.objects.create(
-            regionname=region,
-            crimetype=crime_type,
-            description=description,
-            reportdate=report_date
+        # 1️⃣ total-size check still applies to ALL files
+        try:
+            validate_total_size(files, max_mb=50)
+        except ValidationError as e:
+            messages.error(request, str(e))
+            return redirect('report_crime')
+
+        accepted = []
+        rejected = []
+
+        for f in files:
+            try:
+                mime = validate_file(f)
+                accepted.append((f, mime))
+            except ValidationError as e:
+                rejected.append(str(e))
+
+        if not accepted:
+            messages.error(request, "All uploaded files were invalid.")
+            return redirect('report_crime')
+
+        with transaction.atomic():
+            report = Reports.objects.create(
+                regionname=request.POST.get('region'),
+                crimetype=request.POST.get('crime_type'),
+                description=request.POST.get('description'),
+                reportdate=now()
+            )
+
+            for f, mime in accepted:
+                if mime.startswith('image/'):
+                    EvidentImages.objects.create(image=f, cid=report)
+                elif mime.startswith('video/'):
+                    EvidentVideos.objects.create(video=f, cid=report)
+
+        if rejected:
+            for msg in rejected:
+                messages.warning(request, msg)
+
+        messages.success(
+            request,
+            f"{len(accepted)} file(s) uploaded successfully."
         )
 
-        # Save evidence based on file type
-        if uploaded_file:
-            if uploaded_file.content_type.startswith('image/'):
-                EvidentImages.objects.create(image=uploaded_file, cid=report)
-            elif uploaded_file.content_type.startswith('video/'):
-                EvidentVideos.objects.create(video=uploaded_file, cid=report)
+        return redirect('home')
 
-        return redirect('home')  # After submission, go back to home or show success
-
-    return render(request, 'app/report_crime.html', {'current_date': now()})
+    return render(request, 'app/report_crime.html')
 
 
 def home(request):

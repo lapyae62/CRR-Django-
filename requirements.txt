@@ -2,3 +2,5 @@ django>=3.2.14
 oracledb
 pillow
 python-dotenv
+python-magic; sys_platform != "win32"
+python-magic-bin; sys_platform == "win32"

@@ -14,14 +14,14 @@
             </tr>
         </thead>
         <tbody>
-            {% for report in reports %}
+            {% for report in assigned_cases %}
             <tr>
                 <td>{{ report.id }}</td>
                 <td>{{ report.regionname }}</td>
                 <td>{{ report.crimetype }}</td>
                 <td>{{ report.description }}</td>
                 <td>
-                    <form method="post" action="{% url 'take_case' %}">
+                    <form method="POST" action="{% url 'take_case' %}">
                         {% csrf_token %}
                         <input type="hidden" name="report_id" value="{{ report.id }}">
                         <button type="submit" class="btn btn-sm btn-success">Take Case</button>
